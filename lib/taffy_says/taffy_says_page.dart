@@ -1,7 +1,8 @@
+import 'package:ace_taffy/common/toast_provider.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
-
+import 'package:lpinyin/lpinyin.dart';
 import '../common/common_text_style.dart';
 
 class TaffySaysPage extends StatefulWidget {
@@ -14,11 +15,46 @@ class TaffySaysPage extends StatefulWidget {
 class TaffySaysPageState extends State<TaffySaysPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _tc = TextEditingController();
+  final player = AudioPlayer();
   late AnimationController _ac;
   late final Animation<double> _animation;
   bool running = false;
+  List<String> list = [];
+  int playing = 0;
+  String taffySays = '关注永雏塔菲喵 关注永雏塔菲谢谢喵';
 
-  Map<String, String> magicalWords = {};
+  String musicAssetName(String pinyin) {
+    if (double.tryParse(pinyin) != null) {
+      List<String> numToPinyin = [
+        'ling',
+        'yi',
+        'er',
+        'san',
+        'si',
+        'wu',
+        'liu',
+        'qi',
+        'ba',
+        'jiu'
+      ];
+      pinyin = numToPinyin[double.parse(pinyin).toInt()];
+    } else if (pinyin.length <= 1 && pinyin != 'a' && pinyin != 'e') {
+      pinyin = 'space';
+    }
+    return 'sounds/$pinyin.wav';
+  }
+
+  List<String> taffySaysListArrange(String input) {
+    List<String> taffySays = [];
+    String rawPinyin = PinyinHelper.getPinyin(input,
+            separator: "#", format: PinyinFormat.WITHOUT_TONE)
+        .replaceAll(' ', 'space');
+    print(rawPinyin);
+    rawPinyin.split('#').forEach((element) {
+      taffySays.add(musicAssetName(element));
+    });
+    return taffySays;
+  }
 
   Widget _avatarWidget() {
     return Center(
@@ -27,13 +63,17 @@ class TaffySaysPageState extends State<TaffySaysPage>
         InkWell(
           onTap: () {
             if (!running) {
-              running = true;
-              _play();
-              _ac.repeat();
+              if (_tc.text.isNotEmpty) {
+                running = true;
+                _play();
+                _ac.repeat();
+              } else {
+                ToastProvider.error('请输入文字！');
+              }
             } else {
               running = false;
-              _pause();
               _ac.stop();
+              player.release();
             }
           },
           child: RotationTransition(
@@ -51,7 +91,7 @@ class TaffySaysPageState extends State<TaffySaysPage>
                   ],
                   image: const DecorationImage(
                     image: AssetImage(
-                      'asset/menu_logo/crazy_taffy.png',
+                      'assets/menu_logo/crazy_taffy.png',
                     ),
                     fit: BoxFit.fill,
                   )),
@@ -88,6 +128,20 @@ class TaffySaysPageState extends State<TaffySaysPage>
       vsync: this,
       duration: const Duration(seconds: 3),
     );
+    player.setPlayerMode(PlayerMode.lowLatency);
+    player.setReleaseMode(ReleaseMode.release);
+    player.onPlayerComplete.listen((event) async {
+      if (playing < list.length - 1 && running == true) {
+        playing++;
+        await player.setSourceAsset(list[playing]);
+        await player.resume();
+      } else {
+        if (playing == list.length - 1) {
+          _ac.reset();
+          playing = 0;
+        }
+      }
+    });
     _animation = Tween<double>(begin: 0, end: 1).animate(_ac);
     super.initState();
   }
@@ -130,7 +184,15 @@ class TaffySaysPageState extends State<TaffySaysPage>
                 ))));
   }
 
-  _play() {}
-
-  _pause() {}
+  _play() async {
+    if (taffySays != _tc.text) {
+      list = taffySaysListArrange(_tc.text);
+      await player.setSourceAsset(list[playing]);
+      player.resume();
+      taffySays = _tc.text;
+    } else {
+      await player.setSourceAsset(list[playing]);
+      player.resume();
+    }
+  }
 }

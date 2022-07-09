@@ -33,13 +33,14 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: '永雏塔菲',
       debugShowCheckedModeBanner: false,
-      home: StartUpWidget(),
+      home: const StartUpWidget(),
       // 滚动组件拉到底时的波浪颜色，之前默认为蓝色
       theme: ThemeData(
           colorScheme:
               ColorScheme.fromSwatch().copyWith(secondary: Colors.white)),
       builder: (context, child) {
         TextUtil.init(context);
+        SpUtil.initSp();
         final size = MediaQuery.of(context).size;
         Application.screenWidth = size.width;
         Application.screenHeight = size.height;
@@ -61,6 +62,8 @@ class _MyAppState extends State<MyApp> {
 }
 
 class StartUpWidget extends StatefulWidget {
+  const StartUpWidget({Key? key}) : super(key: key);
+
   @override
   _StartUpWidgetState createState() => _StartUpWidgetState();
 }
@@ -91,11 +94,11 @@ class _StartUpWidgetState extends State<StartUpWidget> {
       color: const Color(0xFF0F111A),
       child: Stack(fit: StackFit.expand, children: [
         Container(
-          color: const Color(0xfff7ddff),
+          color: const Color(0xfffaeeff),
           child: const Center(
             child: ClipRRect(
                 child: Image(
-                    image: AssetImage('asset/menu_logo/taffy_happy.gif'))),
+                    image: AssetImage('assets/menu_logo/taffy_happy.gif'))),
           ),
         ),
         if (_open)

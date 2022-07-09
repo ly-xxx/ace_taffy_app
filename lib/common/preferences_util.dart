@@ -9,10 +9,8 @@ class SpUtil {
   static Future<void> initSp() async {
     _sharedPref = await SharedPreferences.getInstance();
   }
-
-  // 是否正在上传音频，上传中不能调用 check 和 compose
-  // static var isUploadingRecord = PrefsBean<bool>('isUploadingRecord', false);
-
+  static var lastFansCnt = PrefsBean<String>('lastFansCnt', '555654');
+  static var lastLiveViewCnt = PrefsBean<int>('lastLiveViewCnt', 0);
 
   static void clearAllExceptInstruction() {
 
