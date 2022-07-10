@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../common/config.dart';
+import '../common/constants.dart';
 import 'net_check_interceptor.dart';
 
 class BaseNetWork {

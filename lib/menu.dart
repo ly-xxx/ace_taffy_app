@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:ace_taffy/common/config.dart';
+import 'package:ace_taffy/common/constants.dart';
 import 'package:ace_taffy/common/preferences_util.dart';
-import 'package:ace_taffy/data_plaza/data_plaza_entry_page.dart';
 import 'package:ace_taffy/network/network_service.dart';
-import 'package:ace_taffy/taffy_says/taffy_says_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -45,26 +43,22 @@ class MenuPageState extends State<MenuPage> {
       'http://i1.hdslb.com/bfs/face/4907464999fbf2f2a6f9cc8b7352fceb6b3bfec3.jpg';
 
   List<String> assetName = [
-    'assets/menu_logo/crazy_taffy.png',
+    'assets/menu_logo/official_taffy.png',
+    'assets/menu_logo/taffy_up_side_down.png',
     'assets/menu_logo/data_plaza.png',
+    'assets/menu_logo/crazy_taffy.png',
     'assets/menu_logo/slice.png',
     'assets/menu_logo/yeex_official.png',
   ];
-  List<String> identifiedName = ['活字印刷', 'v圈数据', '切片二创', '关于'];
+  List<String> identifiedName = ['塔动态', '塔论坛', '塔数据', '塔子说话', '切片二创', '关于'];
 
-  List<MaterialPageRoute> routes = [
-    MaterialPageRoute(builder: (BuildContext context) {
-      return const TaffySaysPage();
-    }),
-    MaterialPageRoute(builder: (BuildContext context) {
-      return const TaffySaysPage();
-    }),
-    MaterialPageRoute(builder: (BuildContext context) {
-      return const TaffySaysPage();
-    }),
-    MaterialPageRoute(builder: (BuildContext context) {
-      return const TaffySaysPage();
-    })
+  List<String> routes = [
+    'OfficialTaffyPage',
+    'TaffySaysPage',
+    'DataPlazaEntryPage',
+    'TaffySaysPage',
+    'TaffySaysPage',
+    'TaffySaysPage'
   ];
 
   List<String> topText = [
@@ -169,45 +163,52 @@ class MenuPageState extends State<MenuPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          MaterialButton(
-                            padding: EdgeInsets.zero,
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onPressed: () {
-                              setState(() {
-                                useAutoRefresh = false;
-                                _dateTimer?.cancel();
-                              });
-                              active == index * 2
-                                  ? Navigator.push(context, routes[index * 2])
-                                  : setState(() {
-                                      active = index * 2;
-                                    });
-                            },
-                            child: identifiedCard(assetName[index * 2],
-                                identifiedName[index * 2], active == index * 2),
-                          ),
-                          MaterialButton(
-                            padding: EdgeInsets.zero,
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onPressed: () {
-                              setState(() {
-                                useAutoRefresh = false;
-                                _dateTimer?.cancel();
-                              });
-                              active == index * 2 + 1
-                                  ? Navigator.push(
-                                      context, routes[index * 2 + 1])
-                                  : setState(() {
-                                      active = index * 2 + 1;
-                                    });
-                            },
-                            child: identifiedCard(
-                                assetName[index * 2 + 1],
-                                identifiedName[index * 2 + 1],
-                                active == index * 2 + 1),
-                          ),
+                          Builder(builder: (context) {
+                            return MaterialButton(
+                              padding: EdgeInsets.zero,
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onPressed: () {
+                                setState(() {
+                                  useAutoRefresh = false;
+                                  _dateTimer?.cancel();
+                                });
+                                active == index * 2
+                                    ? Navigator.pushNamed(
+                                        context, routes[index * 2])
+                                    : setState(() {
+                                        active = index * 2;
+                                      });
+                              },
+                              child: identifiedCard(
+                                  assetName[index * 2],
+                                  identifiedName[index * 2],
+                                  active == index * 2),
+                            );
+                          }),
+                          Builder(builder: (context) {
+                            return MaterialButton(
+                              padding: EdgeInsets.zero,
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onPressed: () {
+                                setState(() {
+                                  useAutoRefresh = false;
+                                  _dateTimer?.cancel();
+                                });
+                                active == index * 2 + 1
+                                    ? Navigator.pushNamed(
+                                        context, routes[index * 2 + 1])
+                                    : setState(() {
+                                        active = index * 2 + 1;
+                                      });
+                              },
+                              child: identifiedCard(
+                                  assetName[index * 2 + 1],
+                                  identifiedName[index * 2 + 1],
+                                  active == index * 2 + 1),
+                            );
+                          }),
                         ],
                       ),
                     );
@@ -373,7 +374,7 @@ class MenuPageState extends State<MenuPage> {
                               constraints: BoxConstraints(
                                   maxWidth: (MediaQuery.of(context).size.width -
                                           62.w) *
-                                      0.24),
+                                      0.32),
                               child: Text(
                                 liveTitle,
                                 overflow: TextOverflow.ellipsis,
@@ -386,7 +387,8 @@ class MenuPageState extends State<MenuPage> {
                             ),
                           ],
                         ),
-                        const Text('点击跳转直播间'),
+                        Text('点击跳转直播间',
+                            style: TextUtil.base.greyA8.w300.sp(10)),
                         const Spacer(),
                         SizedBox(
                           width:
@@ -398,7 +400,7 @@ class MenuPageState extends State<MenuPage> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      '${fansChanged == 0 ? ' ' : '↑'}$fansChanged',
+                                      '${liveViewerChanged == 0 ? ' ' : '↑'}$liveViewerChanged',
                                       style: TextUtil.base.greyA6.w900.sp(10),
                                     ),
                                     Text(
@@ -465,7 +467,7 @@ class MenuPageState extends State<MenuPage> {
   Widget identifiedCard(String assetName, String identifyName, bool active) {
     return AnimatedContainer(
       width: active
-          ? MediaQuery.of(context).size.width * 0.46
+          ? MediaQuery.of(context).size.width * 0.42
           : MediaQuery.of(context).size.width * 0.40,
       decoration: BoxDecoration(
           color: Colors.white,

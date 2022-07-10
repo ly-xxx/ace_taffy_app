@@ -49,7 +49,6 @@ class TaffySaysPageState extends State<TaffySaysPage>
     String rawPinyin = PinyinHelper.getPinyin(input,
             separator: "#", format: PinyinFormat.WITHOUT_TONE)
         .replaceAll(' ', 'space');
-    print(rawPinyin);
     rawPinyin.split('#').forEach((element) {
       taffySays.add(musicAssetName(element));
     });
@@ -126,7 +125,7 @@ class TaffySaysPageState extends State<TaffySaysPage>
   void initState() {
     _ac = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 5),
     );
     player.setPlayerMode(PlayerMode.lowLatency);
     player.setReleaseMode(ReleaseMode.release);
@@ -194,5 +193,7 @@ class TaffySaysPageState extends State<TaffySaysPage>
       await player.setSourceAsset(list[playing]);
       player.resume();
     }
+    print('--------------------------------');
+    print(list);
   }
 }

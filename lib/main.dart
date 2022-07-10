@@ -1,4 +1,7 @@
-import 'package:ace_taffy/splash.dart';
+import 'package:ace_taffy/data_plaza/data_plaza_entry_page.dart';
+import 'package:ace_taffy/menu.dart';
+import 'package:ace_taffy/official_taffy/official_taffy.dart';
+import 'package:ace_taffy/taffy_says/taffy_says_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,6 +37,12 @@ class _MyAppState extends State<MyApp> {
       title: '永雏塔菲',
       debugShowCheckedModeBanner: false,
       home: const StartUpWidget(),
+      routes: <String, WidgetBuilder>{
+        "DataPlazaEntryPage": (BuildContext context) =>
+            const DataPlazaEntryPage(),
+        "TaffySaysPage": (BuildContext context) => const TaffySaysPage(),
+        "OfficialTaffyPage": (BuildContext context) => const OfficialTaffyPage(),
+      },
       // 滚动组件拉到底时的波浪颜色，之前默认为蓝色
       theme: ThemeData(
           colorScheme:
@@ -68,48 +77,51 @@ class StartUpWidget extends StatefulWidget {
   _StartUpWidgetState createState() => _StartUpWidgetState();
 }
 
-class _StartUpWidgetState extends State<StartUpWidget> {
-  bool _open = false;
-  double _opacity = 0;
+class _StartUpWidgetState extends State<StartUpWidget> with SingleTickerProviderStateMixin{
+  bool _open = true;
+  bool _openMain = false;
+  double _opacity = 1;
 
   @override
   void initState() {
-    super.initState();
-    _open = false;
-    _opacity = 0;
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      Future.delayed(const Duration(milliseconds: 1000)).then((_) {
+      Future.delayed(const Duration(milliseconds: 100)).then((_) {
         setState(() {
-          _open = true;
-          _opacity = 1;
+          _openMain = true;
+          _opacity = 0;
         });
+        Future.delayed(const Duration(milliseconds: 1100))
+            .then((value) => setState(() {
+                  _open = false;
+                }));
       });
     });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, designSize: const Size(375, 812));
-    return Container(
-      color: const Color(0xFF0F111A),
-      child: Stack(fit: StackFit.expand, children: [
-        Container(
-          color: const Color(0xfffaeeff),
-          child: const Center(
-            child: ClipRRect(
-                child: Image(
-                    image: AssetImage('assets/menu_logo/taffy_happy.gif'))),
+    return Stack(fit: StackFit.expand, children: [
+      Container(
+        color: const Color(0xFF0F111A),
+      ),
+      if (_openMain) const MenuPage(),
+      if (_open)
+        AnimatedOpacity(
+          duration: const Duration(milliseconds: 1100),
+          curve: Curves.easeOutSine,
+          opacity: _opacity,
+          child: Container(
+            color: const Color(0xfffaeeff),
+            child: const Center(
+              child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(40)),
+                  child: Image(
+                      image: AssetImage('assets/menu_logo/taffy_happy.gif'))),
+            ),
           ),
         ),
-        if (_open)
-          AnimatedOpacity(
-            duration: const Duration(milliseconds: 2000),
-            curve: Curves.easeOutSine,
-            opacity: _opacity,
-            child: const MenuPage(),
-          ),
-      ]),
-      constraints: const BoxConstraints.expand(),
-    );
+    ]);
   }
 }

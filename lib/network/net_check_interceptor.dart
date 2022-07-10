@@ -3,7 +3,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../application.dart';
-import '../common_pages/network_failed_page.dart';
+import '../common/common_pages/network_failed_page.dart';
 import 'base_api.dart';
 
 class NetCheckInterceptor extends InterceptorsWrapper {
