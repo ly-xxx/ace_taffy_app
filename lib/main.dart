@@ -137,7 +137,7 @@ class _StartUpWidgetState extends State<StartUpWidget>
             decoration: const BoxDecoration(
                 color: Colors.black87,
                 image: DecorationImage(
-                  image: AssetImage('assets/icons/png/splash.jpg'),
+                  image: AssetImage('assets/icons/png/splash.png'),
                   fit: BoxFit.cover,
                   alignment: Alignment.bottomCenter,
                 )),
