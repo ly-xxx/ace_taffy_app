@@ -1,19 +1,19 @@
 import 'package:ace_taffy/common/constants.dart';
+import 'package:ace_taffy/common/preferences_util.dart';
 import 'package:ace_taffy/common/toast_provider.dart';
 import 'package:ace_taffy/common/webview_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../common/common_text_style.dart';
-import '../common/preferences_util.dart';
 
-class DataPlazaEntryPage extends StatefulWidget {
-  const DataPlazaEntryPage({Key? key}) : super(key: key);
+class BBSSPage extends StatefulWidget {
+  const BBSSPage({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => DataPlazaEntryPageState();
+  State<StatefulWidget> createState() => BBSSPageState();
 }
 
-class DataPlazaEntryPageState extends State<DataPlazaEntryPage>
+class BBSSPageState extends State<BBSSPage>
     with SingleTickerProviderStateMixin {
   late final ScrollController _sc;
 
@@ -44,7 +44,7 @@ class DataPlazaEntryPageState extends State<DataPlazaEntryPage>
             title: Row(
               children: [
                 Text(
-                  '塔数据',
+                  '塔论坛',
                   style: TextUtil.base.black2A.medium.sp(18),
                 ),
                 Text(
@@ -57,13 +57,14 @@ class DataPlazaEntryPageState extends State<DataPlazaEntryPage>
               IconButton(
                 padding: EdgeInsets.only(right: 20.w),
                 onPressed: () {
-                  ToastProvider.error('看板页面自定义功能开发中，请耐心等候');
+                  ToastProvider.error('自定义功能开发中，请耐心等候');
                 },
                 icon: Icon(Icons.edit, color: Colors.black, size: 18.sp),
               )
             ],
           ),
-          body: WebViewPage(SpUtil.staUrls.get(), SpUtil.staNames.get())),
+          body: WebViewPage(SpUtil.bbsUrls.get(), SpUtil.bbsNames.get())
+      ),
     );
   }
 }

@@ -1,8 +1,10 @@
+import 'package:ace_taffy/common/constants.dart';
 import 'package:ace_taffy/common/toast_provider.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lpinyin/lpinyin.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../common/common_text_style.dart';
 
 class TaffySaysPage extends StatefulWidget {
@@ -15,15 +17,16 @@ class TaffySaysPage extends StatefulWidget {
 class TaffySaysPageState extends State<TaffySaysPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _tc = TextEditingController();
-  final player = AudioPlayer();
+  final assetsAudioPlayer = AssetsAudioPlayer();
   late AnimationController _ac;
   late final Animation<double> _animation;
   bool running = false;
-  List<String> list = [];
+  List<Audio> list = [];
   int playing = 0;
   String taffySays = '关注永雏塔菲喵 关注永雏塔菲谢谢喵';
 
   String musicAssetName(String pinyin) {
+    // 尝试读数字
     if (double.tryParse(pinyin) != null) {
       List<String> numToPinyin = [
         'ling',
@@ -38,9 +41,13 @@ class TaffySaysPageState extends State<TaffySaysPage>
         'jiu'
       ];
       pinyin = numToPinyin[double.parse(pinyin).toInt()];
-    } else if (pinyin.length <= 1 && pinyin != 'a' && pinyin != 'e') {
+    }
+    // 读取标点符号，转化为空格
+    else if (pinyin.length <= 1 && pinyin != 'a' && pinyin != 'e') {
       pinyin = 'space';
     }
+
+    // 声库缺字取相近声音
     if (pinyin == 'beng') pinyin = 'ben';
     if (pinyin == 'bin') pinyin = 'bing';
     if (pinyin == 'bin') pinyin = 'bing';
@@ -113,7 +120,7 @@ class TaffySaysPageState extends State<TaffySaysPage>
     if (pinyin == 'zhuan') pinyin = 'zhuang';
     if (pinyin == 'zhun') pinyin = 'zun';
 
-    return 'sounds/$pinyin.wav';
+    return 'assets/sounds/$pinyin.wav';
   }
 
   List<String> taffySaysListArrange(String input) {
@@ -144,7 +151,7 @@ class TaffySaysPageState extends State<TaffySaysPage>
             } else {
               running = false;
               _ac.stop();
-              player.release();
+              assetsAudioPlayer.playOrPause();
             }
           },
           child: RotationTransition(
@@ -199,22 +206,15 @@ class TaffySaysPageState extends State<TaffySaysPage>
       vsync: this,
       duration: const Duration(seconds: 5),
     );
-    player.setPlayerMode(PlayerMode.lowLatency);
-    player.setReleaseMode(ReleaseMode.release);
-    player.onPlayerComplete.listen((event) async {
-      if (playing < list.length - 1 && running == true) {
-        playing++;
-        await player.setSourceAsset(list[playing]);
-        await player.resume();
-      } else {
-        if (playing == list.length - 1) {
-          _ac.reset();
-          playing = 0;
-        }
-      }
-    });
     _animation = Tween<double>(begin: 0, end: 1).animate(_ac);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    assetsAudioPlayer.dispose();
+    _ac.dispose();
+    super.dispose();
   }
 
   @override
@@ -224,6 +224,10 @@ class TaffySaysPageState extends State<TaffySaysPage>
           elevation: 0,
           centerTitle: true,
           backgroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
           title: Text(
             '活字印刷',
             style: TextUtil.base.black2A.medium.sp(18),
@@ -244,28 +248,116 @@ class TaffySaysPageState extends State<TaffySaysPage>
                         _avatarWidget(),
                         SizedBox(height: 15.r),
                         Text(
-                          "文字",
+                          "taffy要说！说一只！说一只！",
                           style: TextUtil.base.sp(18).black2A.w500,
+                        ),
+                        Text(
+                          '(英文字母声音暂缺，请勿输入英文字母，可以输入标点符号）',
+                          style: TextUtil.base.black4E60.medium.sp(12),
                         ),
                         TextField(
                           controller: _tc,
                           style: TextUtil.base.sp(16).black4E,
-                        )
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          "外部链接",
+                          style: TextUtil.base.sp(20).black2A.w700,
+                        ),
+                        Text(
+                          '若链接失效请加入‘关于’中群聊反馈',
+                          style: TextUtil.base.black4E60.medium.sp(12),
+                        ),
+                        SizedBox(height: 6.h),
+                        GestureDetector(
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (context) {
+                                return WebView(
+                                  zoomEnabled: false,
+                                  javascriptMode: JavascriptMode.unrestricted,
+                                  initialUrl: Constants.taffyButtonUrl,
+                                );
+                              }),
+                          child: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 6),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFEE3FF),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "塔菲按钮",
+                                  style: TextUtil.base.sp(18).black2A.w500,
+                                ),
+                                Text(
+                                  '（©2020 Blacktunes & 一只雏草姬）',
+                                  style: TextUtil.base.black4E60.medium.sp(12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (context) {
+                                return WebView(
+                                  zoomEnabled: false,
+                                  javascriptMode: JavascriptMode.unrestricted,
+                                  initialUrl: Constants.nanaButtonUrl,
+                                );
+                              }),
+                          child: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 6),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE2D6FF),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(8)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "七奈按钮",
+                                  style: TextUtil.base.sp(18).black2A.w500,
+                                ),
+                                Text(
+                                  '（©2020 Blacktunes & 辣辣七奈军）',
+                                  style: TextUtil.base.black4E60.medium.sp(12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ]),
                 ))));
   }
 
   _play() async {
     if (taffySays != _tc.text) {
-      list = taffySaysListArrange(_tc.text);
-      await player.setSourceAsset(list[playing]);
-      player.resume();
+      list.clear();
+      taffySaysListArrange(_tc.text).forEach((element) {
+        list.add(Audio(element));
+      });
+      list.add(Audio('assets/sounds/space.wav'));
+      await assetsAudioPlayer.open(
+        Playlist(audios: list),
+        headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplug,
+        loopMode: LoopMode.playlist,
+      );
       taffySays = _tc.text;
     } else {
-      await player.setSourceAsset(list[playing]);
-      player.resume();
+      await assetsAudioPlayer.play();
     }
-    print('--------------------------------');
-    print(list);
   }
 }

@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-import '../common/constants.dart';
 import 'net_check_interceptor.dart';
 
 class BaseNetWork {
@@ -16,7 +15,6 @@ class BaseNetWork {
   BaseNetWork._internal() {
     dio = Dio()
       ..options = BaseOptions(
-          baseUrl: Constants.baseUrl,
           connectTimeout: 30000,
           sendTimeout: 1000 * 60 * 2,
           receiveTimeout: 1000 * 60 * 2,
