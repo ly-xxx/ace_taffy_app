@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -5,7 +7,8 @@ import 'network/network_service.dart';
 import 'network/structures.dart';
 
 class VideoModel extends ChangeNotifier {
-  List<Video> videoList = [];
+  List<Episode> videoList = [];
+  List<Episode> fullList = [];
   int currentPage = 1;
 
   final RefreshController rc = RefreshController();
@@ -17,31 +20,27 @@ class VideoModel extends ChangeNotifier {
 
   void onRefresh() {
     currentPage = 1;
+    fullList.clear();
     videoList.clear();
     rc.refreshCompleted();
     notifyListeners();
   }
 
   void onLoad() async {
-    Future.delayed(const Duration(milliseconds: 5000))
-        .whenComplete(() => rc.loadComplete());
-    await TaffyService.getTaffyVideos(currentPage, '永雏塔菲')
-        .then((List<Video> vd) async {
-      videoList.addAll(vd);
-      await TaffyService.getTaffyVideos(
-              ((currentPage).toDouble() * 2).ceil(), '菲姬厂')
-          .then((List<Video> vd) {
+    if (fullList.isEmpty) {
+      Future.delayed(const Duration(milliseconds: 5000))
+          .whenComplete(() => rc.loadComplete());
+      await TaffyService.getAllFromVideo(bvid: "BV1qD4y1q7QY")
+          .then((List<Episode> vd) async {
+        fullList.addAll(vd);
+        videoList = fullList.length >= 20 ? fullList.sublist(0, 20) : fullList;
         rc.loadComplete();
-        if (vd.length >= 20) {
-          if (!(currentPage.isOdd)) {
-            videoList.addAll(vd.sublist(0, 10));
-          } else {
-            videoList.addAll(vd.sublist(10, 20));
-          }
-        }
       });
-    });
-    currentPage++;
+    } else if (fullList.length >= 10 * currentPage + 10) {
+      videoList.addAll(fullList.sublist(currentPage * 10, currentPage * 10 + 10));
+      currentPage++;
+    }
+    rc.loadComplete();
     notifyListeners();
   }
 }

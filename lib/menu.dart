@@ -73,14 +73,14 @@ class MenuPageState extends State<MenuPage> {
     'assets/menu_logo/slice.png',
     'assets/menu_logo/yeex_official.png',
   ];
-  List<String> identifiedName = ['塔动态', '塔论坛', '塔数据', '塔子说话', '敬请期待', '关于'];
+  List<String> identifiedName = ['塔动态', '塔论坛', '塔数据', '塔子说话', '同接监测', '关于'];
 
   List<String> routes = [
     'OfficialTaffyPage',
     'BBSSPage',
     'DataPlazaEntryPage',
     'TaffySaysPage',
-    'TaffySaysPage',
+    'TogetherPage',
     'AboutPage'
   ];
 
@@ -400,8 +400,8 @@ class MenuPageState extends State<MenuPage> {
     return Column(
       children: List.generate(((identifiedName.length.toDouble()) / 2).floor(),
           (index) {
-        if (index == 0) return sliceCentreEntry();
-        index--;
+        // if (index == 0) return sliceCentreEntry();
+        // index--;
         return Padding(
           padding: EdgeInsets.only(bottom: 10.w, left: 20.w),
           child: Row(
@@ -668,7 +668,7 @@ class MenuPageState extends State<MenuPage> {
                   children: [
                     Text(
                       '切换数据刷新模式',
-                      style: TextUtil.base.black00.w700.sp(12),
+                      style: TextUtil.base.black00.w700.sp(10),
                     ),
                     Text(
                       !useAutoRefresh ? '当前手动模式' : '当前每分钟刷新',
@@ -774,7 +774,11 @@ class MenuPageState extends State<MenuPage> {
                     ),
                   ),
                 ),
-                IconButton(onPressed: () => Navigator.pushNamed(context, 'SliceHelperPage'), icon: Icon(Icons.arrow_forward_ios, color: Colors.white, size: 28.sp))
+                IconButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, 'SliceHelperPage'),
+                    icon: Icon(Icons.arrow_forward_ios,
+                        color: Colors.white, size: 28.sp))
               ],
             )
           ],
@@ -785,17 +789,16 @@ class MenuPageState extends State<MenuPage> {
 }
 
 class VideoCard extends StatefulWidget {
-  final List<Video> vid;
+  final List<Episode> vid;
   final int indexNow;
 
-  VideoCard(this.vid, this.indexNow) : super();
+  const VideoCard(this.vid, this.indexNow, {Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _VideoCardState(this.vid);
+  State<StatefulWidget> createState() => _VideoCardState();
 }
 
 class _VideoCardState extends State<VideoCard> {
-  final List<Video> vid;
   int swiperMinIndex = 0;
   int swiperOffsetIndex = 0;
   bool firstBack = false;
@@ -803,7 +806,7 @@ class _VideoCardState extends State<VideoCard> {
   List<Widget> cards = [];
   final ScrollController _controller = ScrollController();
 
-  _VideoCardState(this.vid);
+  _VideoCardState();
 
   @override
   void initState() {
@@ -827,19 +830,19 @@ class _VideoCardState extends State<VideoCard> {
         margin: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
         padding: EdgeInsets.all(6.w),
         decoration: BoxDecoration(
-            color: vid[widget.indexNow].playCount >= 100000
-                ? (vid[widget.indexNow].playLike /
-                            vid[widget.indexNow].playCount) >=
+            color: widget.vid[widget.indexNow].view >= 100000
+                ? (widget.vid[widget.indexNow].like /
+                            widget.vid[widget.indexNow].view) >=
                         0.04
                     ? const Color(0xFFFFEAD2)
                     : const Color(0xFFFFF7E6)
-                : (vid[widget.indexNow].playLike /
-                            vid[widget.indexNow].playCount) >=
+                : (widget.vid[widget.indexNow].like /
+                            widget.vid[widget.indexNow].view) >=
                         0.04
                     ? const Color(0xFFFDF4FF)
                     : DateTime.now()
                                 .difference(DateTime.fromMillisecondsSinceEpoch(
-                                    vid[widget.indexNow].pubDate * 1000))
+                                    widget.vid[widget.indexNow].pubDate * 1000))
                                 .inDays <=
                             1
                         ? const Color(0xFFDEE3FF)
@@ -851,9 +854,27 @@ class _VideoCardState extends State<VideoCard> {
             cards.clear();
             cards.addAll([
               cardSpace(context),
-              WebViewCard(0, [vid[swiperMinIndex].url], const [''], true),
-              WebViewCard(0, [vid[swiperMinIndex + 1].url], const [''], true),
-              WebViewCard(0, [vid[swiperMinIndex + 2].url], const [''], true),
+              WebViewCard(
+                  0,
+                  [
+                    "https://www.bilibili.com/video/${widget.vid[swiperMinIndex].bvid}"
+                  ],
+                  const [''],
+                  true),
+              WebViewCard(
+                  0,
+                  [
+                    "https://www.bilibili.com/video/${widget.vid[swiperMinIndex + 1].bvid}"
+                  ],
+                  const [''],
+                  true),
+              WebViewCard(
+                  0,
+                  [
+                    "https://www.bilibili.com/video/${widget.vid[swiperMinIndex + 2].bvid}"
+                  ],
+                  const [''],
+                  true),
             ]);
             showDialog(
                 context: context,
@@ -942,13 +963,11 @@ class _VideoCardState extends State<VideoCard> {
                               0.375,
                         ),
                         Image.network(
-                          vid[widget.indexNow].pic,
+                          widget.vid[widget.indexNow].pic,
                           cacheHeight: 300,
                           cacheWidth: 480,
-                          width:
-                              (MediaQuery.of(context).size.width - 52.w) * 0.6,
-                          height: (MediaQuery.of(context).size.width - 52.w) *
-                              0.375,
+                          width: (1.sw - 52.w) * 0.6,
+                          height: (1.sw - 52.w) * 0.375,
                           fit: BoxFit.cover,
                         ),
                         Positioned(
@@ -961,7 +980,7 @@ class _VideoCardState extends State<VideoCard> {
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(4.w))),
                             child: Text(
-                              vid[widget.indexNow].duration,
+                              widget.vid[widget.indexNow].duration.toString(),
                               style: TextUtil.base.white.w400.sp(14),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -984,7 +1003,8 @@ class _VideoCardState extends State<VideoCard> {
                             flex: 1,
                             child: GestureDetector(
                               onTap: () async {
-                                await launchUrlString(vid[widget.indexNow].url,
+                                await launchUrlString(
+                                    "https://www.bilibili.com/video/${widget.vid[widget.indexNow].bvid}",
                                     mode: LaunchMode
                                         .externalNonBrowserApplication);
                               },
@@ -1037,24 +1057,14 @@ class _VideoCardState extends State<VideoCard> {
                       ),
                       const Spacer(),
                       Text(
-                        'UP: ${vid[widget.indexNow].author}',
-                        style: vid[widget.indexNow].author == 'yeex_official'
-                            ? TextUtil.base.mainYellow.w500.sp(14)
-                            : vid[widget.indexNow].author == '永雏塔菲'
-                                ? TextUtil.base.ren60.w500.sp(14)
-                                : TextUtil.base.black2A.w500.sp(14),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        '播放:${vid[widget.indexNow].playCount} 赞:${vid[widget.indexNow].playLike}',
+                        '播放:${widget.vid[widget.indexNow].view} 赞:${widget.vid[widget.indexNow].like}',
                         style: TextUtil.base.greyA6.w500.sp(11),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         DateTime.fromMillisecondsSinceEpoch(
-                                vid[widget.indexNow].pubDate * 1000)
+                                widget.vid[widget.indexNow].pubDate * 1000)
                             .toString()
                             .substring(0, 19),
                         style: TextUtil.base.greyA6.w500.sp(10),
@@ -1070,7 +1080,7 @@ class _VideoCardState extends State<VideoCard> {
             Padding(
               padding: EdgeInsets.only(left: 6.w),
               child: Text(
-                vid[widget.indexNow].title,
+                widget.vid[widget.indexNow].title,
                 style: TextUtil.base.black2A.w500.sp(16),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1081,7 +1091,7 @@ class _VideoCardState extends State<VideoCard> {
   }
 
   void saveImgToAlbum() {
-    final url = vid[widget.indexNow].pic;
+    final url = widget.vid[widget.indexNow].pic;
     GallerySaver.saveImage(url, albumName: 'ace taffy').then((_) {
       ToastProvider.success("成功保存到相册");
     });
@@ -1094,9 +1104,9 @@ class _VideoCardState extends State<VideoCard> {
         PointerDownEvent(pointer: 0, position: Offset(189.7, 327.7));
     const PointerEvent upPointer =
         PointerUpEvent(pointer: 0, position: Offset(189.7, 327.7));
-    GestureBinding.instance!.handlePointerEvent(addPointer);
-    GestureBinding.instance!.handlePointerEvent(downPointer);
-    GestureBinding.instance!.handlePointerEvent(upPointer);
+    GestureBinding.instance.handlePointerEvent(addPointer);
+    GestureBinding.instance.handlePointerEvent(downPointer);
+    GestureBinding.instance.handlePointerEvent(upPointer);
   }
 
   void _scrollAction(DragEndDetails details) {
@@ -1136,8 +1146,13 @@ class _VideoCardState extends State<VideoCard> {
               curve: Curves.easeOutQuad);
         }
       });
-      cards.add(WebViewCard(0,
-          [vid[swiperMinIndex + swiperOffsetIndex + 2].url], const [''], true));
+      cards.add(WebViewCard(
+          0,
+          [
+            "https://www.bilibili.com/video/${widget.vid[swiperMinIndex + swiperOffsetIndex + 2].bvid}"
+          ],
+          const [''],
+          true));
       if (swiperOffsetIndex - 1 >= 0) {
         setState(() {
           cards[swiperOffsetIndex - 1] = cardSpace(context);
@@ -1167,8 +1182,13 @@ class _VideoCardState extends State<VideoCard> {
           cards.removeAt(swiperOffsetIndex - 1);
           cards.insert(
               swiperOffsetIndex - 1,
-              WebViewCard(0, [vid[swiperMinIndex + swiperOffsetIndex - 2].url],
-                  const [''], true));
+              WebViewCard(
+                  0,
+                  [
+                    "https://www.bilibili.com/video/${widget.vid[swiperMinIndex + swiperOffsetIndex - 2].bvid}"
+                  ],
+                  const [''],
+                  true));
         }
         cards.removeLast();
       });

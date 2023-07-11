@@ -7,6 +7,7 @@ import 'package:ace_taffy/official_taffy/official_taffy.dart';
 import 'package:ace_taffy/providers.dart';
 import 'package:ace_taffy/slice_helper/slice_helper_page.dart';
 import 'package:ace_taffy/taffy_says/taffy_says_page.dart';
+import 'package:ace_taffy/together/together.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -44,7 +45,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {});
+    WidgetsBinding.instance.addPostFrameCallback((_) async {});
   }
 
   @override
@@ -67,6 +68,7 @@ class _MyAppState extends State<MyApp> {
           "AboutPage": (BuildContext context) => const AboutPage(),
           "SettingPage": (BuildContext context) => const SettingPage(),
           "SliceHelperPage": (BuildContext context) => const SliceHelperPage(),
+          "TogetherPage": (BuildContext context) => const TogetherPage(),
         },
         // 滚动组件拉到底时的波浪颜色，之前默认为蓝色
         theme: ThemeData(
@@ -102,7 +104,7 @@ class _StartUpWidgetState extends State<StartUpWidget>
 
   @override
   void initState() {
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() {
         _opacity = 1;
       });
