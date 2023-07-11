@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ace_taffy/common/preferences_util.dart';
 import 'package:ace_taffy/network/structures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,7 +18,6 @@ class TogetherPageState extends State<TogetherPage> {
   List<Episode> fullList = [];
   Map<Episode, int> arrangedMap = {};
   Timer? _dateTimer;
-  String bvid = "BV1qD4y1q7QY";
   bool useAutoRefresh = false;
 
   @override
@@ -33,24 +33,26 @@ class TogetherPageState extends State<TogetherPage> {
   }
 
   void refresh() async {
+    arrangedMap.clear();
     fullList.clear();
-    await TaffyService.getAllFromVideo(bvid: bvid)
+    await TaffyService.getAllFromVideo(bvid: SpUtil.bvid.get())
         .then((List<Episode> vd) async {
       fullList.addAll(vd);
+      getStatistics();
     });
-    getStatistics();
   }
 
   void getStatistics() async {
     Map<Episode, int> eMap = {};
+    eMap.clear();
     for (Episode e in fullList) {
       await TaffyService.getOnlineNum(aid: e.aid, cid: e.cid).then((onlineNum) {
         eMap.addAll({e: onlineNum});
+        arrangedMap = Map.fromEntries(eMap.entries.toList()
+          ..sort((e1, e2) => -(e1.value.compareTo(e2.value))));
+        setState(() {});
       });
     }
-    arrangedMap = Map.fromEntries(eMap.entries.toList()
-      ..sort((e1, e2) => -(e1.value.compareTo(e2.value))));
-    setState(() {});
   }
 
   @override
@@ -68,48 +70,82 @@ class TogetherPageState extends State<TogetherPage> {
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.black),
-                  onPressed: () => SimpleDialog(children: [
-                    GestureDetector(
-                      onTap: () => useAutoRefresh
-                          ? setState(() {
-                              useAutoRefresh = false;
-                              _dateTimer?.cancel();
-                            })
-                          : setState(() {
-                              useAutoRefresh = true;
-                              getStatistics();
-                              _dateTimer = Timer.periodic(
-                                  const Duration(minutes: 1), (timer) {
-                                getStatistics();
-                              });
-                            }),
-                      child: Container(
-                        height: 48.sp,
-                        width: (MediaQuery.of(context).size.width - 50.w) * 0.4,
-                        padding: EdgeInsets.fromLTRB(12.w, 6.w, 0, 6.w),
-                        margin: EdgeInsets.fromLTRB(20.w, 0, 10.w, 10.w),
-                        decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(12))),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '切换数据刷新模式',
-                              style: TextUtil.base.black00.w700.sp(10),
-                            ),
-                            Text(
-                              !useAutoRefresh ? '当前手动模式' : '当前每分钟刷新',
-                              style: TextUtil.base.greyA6.w700.sp(14),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ]),
-                ),
+                    icon: const Icon(Icons.edit, color: Colors.black),
+                    onPressed: () => showDialog(
+                        context: context,
+                        builder: (_) {
+                          return SimpleDialog(children: [
+                            Container(
+                              height: 100.sp,
+                              width:
+                                  (MediaQuery.of(context).size.width - 50.w) *
+                                      0.6,
+                              padding: EdgeInsets.fromLTRB(12.w, 6.w, 0, 6.w),
+                              decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(12))),
+                              child: Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      useAutoRefresh
+                                          ? setState(() {
+                                              useAutoRefresh = false;
+                                              _dateTimer?.cancel();
+                                            })
+                                          : setState(() {
+                                              useAutoRefresh = true;
+                                              getStatistics();
+                                              _dateTimer = Timer.periodic(
+                                                  const Duration(minutes: 5),
+                                                  (timer) {
+                                                getStatistics();
+                                              });
+                                            });
+                                      Navigator.pop(context);
+                                    },
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '切换数据刷新模式',
+                                          style:
+                                              TextUtil.base.black00.w700.sp(10),
+                                        ),
+                                        Text(
+                                          !useAutoRefresh
+                                              ? '当前手动模式'
+                                              : '当前每分钟刷新',
+                                          style:
+                                              TextUtil.base.greyA6.w700.sp(14),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'bvid修改:',
+                                          style:
+                                              TextUtil.base.black00.w700.sp(12),
+                                        ),
+                                        Expanded(
+                                          child: TextField(onSubmitted: (s) {
+                                            SpUtil.bvid.set(s);
+                                            refresh();
+                                          }),
+                                        )
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          ]);
+                        })),
                 IconButton(
                   icon: const Icon(Icons.refresh, color: Colors.black),
                   onPressed: refresh,
@@ -125,8 +161,15 @@ class TogetherPageState extends State<TogetherPage> {
                 itemBuilder: (context, index) {
                   return Container(
                       color: Colors.black12,
-                      child: Text(arrangedMap.keys.toList()[index].bvid +
-                          arrangedMap.values.toList()[index].toString()));
+                      child: Text(
+                          (arrangedMap.keys.toList()[index].title.length > 18
+                                  ? arrangedMap.keys
+                                      .toList()[index]
+                                      .title
+                                      .substring(0, 18)
+                                  : arrangedMap.keys.toList()[index].title) +
+                              "... " +
+                              arrangedMap.values.toList()[index].toString()));
                 })));
   }
 }

@@ -15,6 +15,7 @@ class SpUtil {
   static var yeexHomePage = PrefsBean<String>('yeexHomePage', 'https://space.bilibili.com/291386365');
 
   static var taffyLivePage = PrefsBean<String>('taffyLivePage', 'https://live.bilibili.com/22603245');
+  static var bvid = PrefsBean<String>('bvid', 'BV1qD4y1q7QY');
 
 
   static var lastFansCnt = PrefsBean<String>('lastFansCnt', '555654');

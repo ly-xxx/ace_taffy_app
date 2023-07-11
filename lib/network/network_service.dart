@@ -62,7 +62,10 @@ class TaffyService {
       await BaseNetWork.get(
               'https://api.bilibili.com/x/player/online/total?aid=$aid&cid=$cid')
           .then((resp) {
-        onlineNum = double.parse((resp.data['data']['total'] ?? "0").toString())
+        onlineNum = double.parse((resp.data['data']['total'] ?? "0")
+                .toString()
+                .replaceAll("+", "")
+                .replaceAll("万", "0000"))
             .toInt();
       });
     } on DioError catch (e) {
